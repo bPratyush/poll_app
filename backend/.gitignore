@@ -1,0 +1,5 @@
+poll_app.db
+*.db
+*.db-journal
+*.db-shm
+*.db-wal

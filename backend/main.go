@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 
 	"poll_app/ent"
 	"poll_app/handlers"
@@ -16,9 +17,25 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
 func main() {
+	// Get configuration from environment
+	port := getEnv("PORT", "8080")
+	dbPath := getEnv("DATABASE_PATH", "poll_app.db")
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+	jwtSecret := getEnv("JWT_SECRET", "your-secret-key-change-in-production")
+
+	// Set JWT secret for handlers
+	handlers.SetJWTSecret(jwtSecret)
+
 	// Initialize database connection
-	db, err := sql.Open("sqlite", "file:poll_app.db?cache=shared&_pragma=foreign_keys(1)")
+	db, err := sql.Open("sqlite", "file:"+dbPath+"?cache=shared&_pragma=foreign_keys(1)")
 	if err != nil {
 		log.Fatalf("failed opening connection to sqlite: %v", err)
 	}
@@ -62,7 +79,7 @@ func main() {
 
 	// CORS middleware
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173"},
+		AllowedOrigins:   []string{frontendURL, "http://localhost:3000", "http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
@@ -70,6 +87,6 @@ func main() {
 
 	handler := c.Handler(router)
 
-	log.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	log.Printf("Server starting on :%s", port)
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }

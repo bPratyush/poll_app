@@ -21,6 +21,11 @@ import (
 
 var jwtSecret = []byte("your-secret-key-change-in-production")
 
+// SetJWTSecret allows setting the JWT secret from environment
+func SetJWTSecret(secret string) {
+	jwtSecret = []byte(secret)
+}
+
 type Handler struct {
 	client *ent.Client
 }
