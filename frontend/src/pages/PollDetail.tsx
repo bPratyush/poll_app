@@ -4,6 +4,17 @@ import { Poll, User } from '../types';
 import { pollAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+// Mark poll update as seen in localStorage
+const markUpdateAsSeen = (pollId: number, updatedAt: string) => {
+  try {
+    const seen = JSON.parse(localStorage.getItem('seenPollUpdates') || '{}');
+    seen[pollId] = updatedAt;
+    localStorage.setItem('seenPollUpdates', JSON.stringify(seen));
+  } catch {
+    // Ignore localStorage errors
+  }
+};
+
 function PollDetail() {
   const { id } = useParams<{ id: string }>();
   const [poll, setPoll] = useState<Poll | null>(null);
@@ -15,11 +26,19 @@ function PollDetail() {
   const [voters, setVoters] = useState<User[]>([]);
   const [loadingVoters, setLoadingVoters] = useState(false);
   const [isChangingVote, setIsChangingVote] = useState(false);
+  const [showUpdateNotice, setShowUpdateNotice] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
     fetchPoll();
   }, [id]);
+
+  // Mark update as seen when user views the poll
+  useEffect(() => {
+    if (poll && poll.poll_edited_after_vote && poll.user_voted_option_id) {
+      markUpdateAsSeen(poll.id, poll.updated_at);
+    }
+  }, [poll]);
 
   const fetchPoll = async () => {
     try {
@@ -120,10 +139,27 @@ function PollDetail() {
       {error && <div className="alert alert-error">{error}</div>}
 
       {/* Poll Edited After Vote Notification */}
-      {poll.poll_edited_after_vote && hasVoted && !isChangingVote && (
-        <div className="alert alert-warning" style={{ marginBottom: '1.5rem' }}>
-          <strong>Poll Updated:</strong> This poll was modified after you voted. 
-          You may want to review the options and change your vote if needed.
+      {poll.poll_edited_after_vote && hasVoted && !isChangingVote && showUpdateNotice && (
+        <div className="alert alert-warning" style={{ marginBottom: '1.5rem', position: 'relative' }}>
+          <div style={{ flex: 1 }}>
+            <strong>Poll Updated:</strong> This poll was modified after you voted. 
+            You may want to review the options and change your vote if needed.
+          </div>
+          <button 
+            onClick={() => setShowUpdateNotice(false)}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              cursor: 'pointer', 
+              padding: '0.25rem',
+              color: 'inherit',
+              fontSize: '1.25rem',
+              lineHeight: 1
+            }}
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
         </div>
       )}
 

@@ -4,6 +4,20 @@ import { Poll } from '../types';
 import { pollAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+// Helper to check if user has seen the poll update
+const getSeenUpdates = (): Record<number, string> => {
+  try {
+    return JSON.parse(localStorage.getItem('seenPollUpdates') || '{}');
+  } catch {
+    return {};
+  }
+};
+
+const hasSeenUpdate = (pollId: number, updatedAt: string): boolean => {
+  const seen = getSeenUpdates();
+  return seen[pollId] === updatedAt;
+};
+
 function Polls() {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,11 +66,37 @@ function Polls() {
       {error && <div className="alert alert-error">{error}</div>}
 
       {polls.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">No polls</div>
-          <h2>No polls yet</h2>
-          <p>Create your first poll to get started!</p>
-          <Link to="/polls/new" className="btn btn-primary">Create Your First Poll</Link>
+        <div className="empty-state-hero">
+          <div className="empty-state-visual">
+            <div className="empty-state-circles">
+              <div className="circle circle-1"></div>
+              <div className="circle circle-2"></div>
+              <div className="circle circle-3"></div>
+            </div>
+            <div className="empty-state-icon-box">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+          </div>
+          <h2>Welcome to PollHub</h2>
+          <p className="empty-state-subtitle">Create interactive polls and gather opinions from your team, friends, or community.</p>
+          <div className="empty-state-features">
+            <div className="feature-item">
+              <div className="feature-icon">1</div>
+              <span>Create a poll with multiple options</span>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">2</div>
+              <span>Share with others to collect votes</span>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">3</div>
+              <span>View real-time results and voters</span>
+            </div>
+          </div>
+          <Link to="/polls/new" className="btn btn-primary btn-lg">Create Your First Poll</Link>
         </div>
       ) : (
         <div className="polls-grid">
@@ -70,7 +110,7 @@ function Polls() {
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {poll.poll_edited_after_vote && poll.user_voted_option_id && (
+                  {poll.poll_edited_after_vote && poll.user_voted_option_id && !hasSeenUpdate(poll.id, poll.updated_at) && (
                     <span className="poll-card-badge poll-card-badge-warning">
                       Updated
                     </span>
