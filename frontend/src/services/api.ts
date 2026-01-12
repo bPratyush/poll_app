@@ -37,33 +37,33 @@ api.interceptors.response.use(
 // Auth APIs
 export const authAPI = {
   signUp: (data: { username: string; email: string; password: string }) =>
-    api.post('/auth/signup', data),
+    api.post('/api/auth/signup', data),
   
   login: (data: { email: string; password: string }) =>
-    api.post('/auth/login', data),
+    api.post('/api/auth/login', data),
   
-  me: () => api.get('/auth/me'),
+  me: () => api.get('/api/auth/me'),
 };
 
 // Poll APIs
 export const pollAPI = {
-  list: () => api.get('/polls'),
+  list: () => api.get('/api/polls'),
   
-  get: (id: number) => api.get(`/polls/${id}`),
+  get: (id: number) => api.get(`/api/polls/${id}`),
   
   create: (data: { title: string; description: string; options: string[] }) =>
-    api.post('/polls', data),
+    api.post('/api/polls', data),
   
   update: (id: number, data: { title: string; description: string; options: { id?: number; text: string }[] }) =>
-    api.put(`/polls/${id}`, data),
+    api.put(`/api/polls/${id}`, data),
   
-  delete: (id: number) => api.delete(`/polls/${id}`),
+  delete: (id: number) => api.delete(`/api/polls/${id}`),
   
   vote: (pollId: number, optionId: number) =>
-    api.post(`/polls/${pollId}/vote`, { option_id: optionId }),
+    api.post(`/api/polls/${pollId}/vote`, { option_id: optionId }),
   
   getVoters: (optionId: number) =>
-    api.get(`/options/${optionId}/voters`),
+    api.get(`/api/options/${optionId}/voters`),
 };
 
 export default api;
