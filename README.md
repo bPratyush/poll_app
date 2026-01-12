@@ -146,40 +146,16 @@ Navigate to `http://localhost:3000`, create an account, and start polling!
 ## Database Schema
 
 <details>
-<summary><strong>View Entity Relationship Diagram</strong></summary>
+<summary><strong>View Entity Relationships</strong></summary>
 
 ```
-┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-│    Users     │       │    Polls     │       │   Options    │
-├──────────────┤       ├──────────────┤       ├──────────────┤
-│ id (PK)      │──┐    │ id (PK)      │──┐    │ id (PK)      │
-│ username     │  │    │ title        │  │    │ text         │
-│ email        │  │    │ description  │  │    │ poll_id (FK) │◄─┐
-│ password     │  │    │ creator_id   │◄─┘    └──────────────┘  │
-│ created_at   │  │    │ created_at   │              │          │
-└──────────────┘  │    │ updated_at   │              │          │
-       │          │    └──────────────┘              │          │
-       │          │                                  │          │
-       │          │    ┌──────────────┐              │          │
-       │          ├───►│    Votes     │◄─────────────┘          │
-       │          │    ├──────────────┤                         │
-       │          │    │ id (PK)      │                         │
-       └──────────┼───►│ user_id (FK) │                         │
-                  │    │ option_id(FK)│─────────────────────────┘
-                  │    │ created_at   │
-                  │    └──────────────┘
-                  │
-                  │    ┌──────────────┐
-                  └───►│Notifications │
-                       ├──────────────┤
-                       │ id (PK)      │
-                       │ user_id (FK) │
-                       │ message      │
-                       │ type         │
-                       │ poll_id      │
-                       │ read         │
-                       │ created_at   │
-                       └──────────────┘
+Relationships:
+  • User (1) ──────► (N) Poll        : User creates many polls
+  • User (1) ──────► (N) Vote        : User casts many votes
+  • User (1) ──────► (N) Notification: User receives many notifications
+  • Poll (1) ──────► (N) PollOption  : Poll has many options
+  • PollOption (1) ► (N) Vote        : Option receives many votes
+  • Vote references both User and PollOption (unique constraint)
 ```
 
 </details>
@@ -218,7 +194,7 @@ Navigate to `http://localhost:3000`, create an account, and start polling!
 |--------|------|-------------|
 | id | INTEGER | PRIMARY KEY |
 | user_id | INTEGER | FOREIGN KEY → users |
-| option_id | INTEGER | FOREIGN KEY → options (CASCADE) |
+| option_id | INTEGER | FOREIGN KEY → poll_options (CASCADE) |
 | created_at | TIMESTAMP | DEFAULT NOW |
 | | | UNIQUE(user_id, option_id) |
 
