@@ -28,7 +28,7 @@ services:
     name: poll-app-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npx tsc && npx vite build
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
