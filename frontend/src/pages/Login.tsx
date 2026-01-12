@@ -27,7 +27,7 @@ function Login() {
   return (
     <div className="form-container">
       <h1 className="form-title">Welcome Back</h1>
-      <p className="form-subtitle">Sign in to continue to PollHub</p>
+      <p className="form-subtitle">Sign in to continue to PollApp</p>
       {error && <div className="alert alert-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">

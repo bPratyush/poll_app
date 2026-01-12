@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
 </p>
 
-<h1 align="center">PollHub</h1>
+<h1 align="center">PollApp</h1>
 
 <p align="center">
   <strong>A modern, full-stack polling application</strong><br>
@@ -24,7 +24,7 @@
 
 ## Overview
 
-PollHub is a complete polling solution built with **Go** on the backend and **React** on the frontend. It demonstrates modern web development practices including JWT authentication, RESTful API design, and responsive UI/UX.
+PollApp is a complete polling solution built with **Go** on the backend and **React** on the frontend. It demonstrates modern web development practices including JWT authentication, RESTful API design, and responsive UI/UX.
 
 ### Key Features
 

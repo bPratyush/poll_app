@@ -4,8 +4,8 @@ import { Poll, User } from '../types';
 import { pollAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-// Polling interval in milliseconds (5 seconds)
-const POLL_INTERVAL = 5000;
+// Polling interval in milliseconds (3 seconds)
+const POLL_INTERVAL = 3000;
 
 // Mark poll update as seen in localStorage
 const markUpdateAsSeen = (pollId: number, updatedAt: string) => {

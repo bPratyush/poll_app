@@ -4,8 +4,8 @@ import { Poll } from '../types';
 import { pollAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-// Polling interval in milliseconds (5 seconds)
-const POLL_INTERVAL = 5000;
+// Polling interval in milliseconds (3 seconds)
+const POLL_INTERVAL = 3000;
 
 // Helper to check if user has seen the poll update
 const getSeenUpdates = (): Record<number, string> => {
@@ -82,7 +82,7 @@ function Polls() {
 
       {polls.length === 0 ? (
         <div className="empty-state-hero">
-          <h2>Welcome to PollHub</h2>
+          <h2>Welcome to PollApp</h2>
           <p className="empty-state-subtitle">Create interactive polls and gather opinions from your team, friends, or community.</p>
           <Link to="/polls/new" className="btn btn-primary btn-lg">Create Your First Poll</Link>
           
