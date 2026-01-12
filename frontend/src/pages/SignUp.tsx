@@ -39,7 +39,8 @@ function SignUp() {
 
   return (
     <div className="form-container">
-      <h1 className="form-title">Sign Up</h1>
+      <h1 className="form-title">Create Account</h1>
+      <p className="form-subtitle">Join PollHub and start creating polls</p>
       {error && <div className="alert alert-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">

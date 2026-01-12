@@ -43,9 +43,9 @@ function Polls() {
   return (
     <div>
       <div className="polls-header">
-        <h1>Polls</h1>
+        <h1>Active <span>Polls</span></h1>
         <Link to="/polls/new" className="btn btn-primary">
-          + Create Poll
+          ✨ Create Poll
         </Link>
       </div>
 
@@ -53,8 +53,10 @@ function Polls() {
 
       {polls.length === 0 ? (
         <div className="empty-state">
+          <div className="empty-state-icon">📭</div>
           <h2>No polls yet</h2>
           <p>Create your first poll to get started!</p>
+          <Link to="/polls/new" className="btn btn-primary">✨ Create Your First Poll</Link>
         </div>
       ) : (
         <div className="polls-grid">
@@ -68,7 +70,7 @@ function Polls() {
                   </span>
                 </div>
                 {poll.user_voted_option_id && (
-                  <span className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }}>
+                  <span className="poll-card-badge">
                     ✓ Voted
                   </span>
                 )}

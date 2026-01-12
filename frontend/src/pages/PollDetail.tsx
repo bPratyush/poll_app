@@ -105,10 +105,11 @@ function PollDetail() {
       {error && <div className="alert alert-error">{error}</div>}
 
       <div className="poll-options">
+        <p className="poll-options-title">{hasVoted ? 'Results' : 'Choose an option'}</p>
         {poll.options.map((option) => (
           <div
             key={option.id}
-            className={`poll-option ${selectedOption === option.id ? 'selected' : ''} ${hasVoted ? 'voted' : ''}`}
+            className={`poll-option ${selectedOption === option.id ? 'selected' : ''} ${hasVoted ? 'voted' : ''} ${hasVoted && poll.user_voted_option_id === option.id ? 'user-choice' : ''}`}
             onClick={() => !hasVoted && setSelectedOption(option.id)}
           >
             {!hasVoted && (
@@ -143,19 +144,19 @@ function PollDetail() {
 
       {!hasVoted && (
         <button
-          className="btn btn-primary"
+          className="btn btn-primary w-full"
           onClick={handleVote}
           disabled={!selectedOption || voting}
-          style={{ width: '100%' }}
         >
-          {voting ? 'Voting...' : 'Submit Vote'}
+          {voting ? 'Submitting...' : '🗳️ Submit Vote'}
         </button>
       )}
 
       {hasVoted && (
-        <p style={{ textAlign: 'center', color: '#888', marginTop: '1rem' }}>
-          Total votes: {getTotalVotes()} • Click on vote counts to see who voted
-        </p>
+        <div className="poll-footer">
+          <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
+          <p className="poll-vote-hint">💡 Click on vote counts to see who voted</p>
+        </div>
       )}
 
       <div style={{ marginTop: '2rem', textAlign: 'center' }}>
@@ -168,18 +169,23 @@ function PollDetail() {
       {showVoters !== null && (
         <div className="modal-overlay" onClick={() => setShowVoters(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowVoters(null)}>×</button>
-            <h2>Voters for "{poll.options.find((o) => o.id === showVoters)?.text}"</h2>
+            <div className="modal-header">
+              <h2>Voters for "{poll.options.find((o) => o.id === showVoters)?.text}"</h2>
+              <button className="modal-close" onClick={() => setShowVoters(null)}>×</button>
+            </div>
             {loadingVoters ? (
               <p>Loading voters...</p>
             ) : voters.length === 0 ? (
-              <p>No votes yet</p>
+              <p className="text-muted text-center">No votes yet</p>
             ) : (
               <ul className="voters-list">
                 {voters.map((voter) => (
                   <li key={voter.id}>
-                    <strong>{voter.username}</strong>
-                    <span style={{ color: '#888', marginLeft: '0.5rem' }}>{voter.email}</span>
+                    <div className="voter-avatar">{voter.username.charAt(0).toUpperCase()}</div>
+                    <div className="voter-info">
+                      <strong>{voter.username}</strong>
+                      <span>{voter.email}</span>
+                    </div>
                   </li>
                 ))}
               </ul>

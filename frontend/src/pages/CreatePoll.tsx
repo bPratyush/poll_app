@@ -52,6 +52,7 @@ function CreatePoll() {
   return (
     <div className="poll-form">
       <h1>Create New Poll</h1>
+      <p className="poll-form-subtitle">Ask a question and let people vote</p>
       {error && <div className="alert alert-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
