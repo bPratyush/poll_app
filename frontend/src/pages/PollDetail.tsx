@@ -254,21 +254,28 @@ function PollDetail() {
         <div className="poll-footer">
           <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
           <p className="poll-vote-hint">Click on vote counts to see who voted</p>
-          <button
-            className="btn btn-secondary"
-            style={{ marginTop: '1rem' }}
-            onClick={handleChangeVote}
-          >
-            Change My Vote
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={handleChangeVote}
+            >
+              Change My Vote
+            </button>
+            <Link to="/" className="btn btn-primary">
+              Done
+            </Link>
+          </div>
         </div>
       )}
 
-      <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-        <Link to="/" className="btn btn-secondary">
-          Back to Polls
-        </Link>
-      </div>
+      {/* Back link for users who haven't voted */}
+      {!hasVoted && (
+        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+          <Link to="/" className="btn btn-secondary">
+            Back to Polls
+          </Link>
+        </div>
+      )}
 
       {/* Voters Modal */}
       {showVoters !== null && (
