@@ -1,447 +1,297 @@
-# PollHub - Full-Stack Polling Application
+<p align="center">
+  <img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go">
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React">
+  <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+</p>
 
-A comprehensive polling application designed to demonstrate proficiency in modern web development technologies, specifically Go for backend services and React for frontend interfaces.
+<h1 align="center">PollHub</h1>
 
-## Table of Contents
+<p align="center">
+  <strong>A modern, full-stack polling application</strong><br>
+  Create polls, gather votes, and see real-time results with voter transparency.
+</p>
 
-1. [Project Overview](#project-overview)
-2. [Features](#features)
-3. [Technology Stack](#technology-stack)
-4. [System Architecture](#system-architecture)
-5. [Database Design](#database-design)
-6. [API Documentation](#api-documentation)
-7. [Installation Guide](#installation-guide)
-8. [Deployment](#deployment)
-9. [Project Structure](#project-structure)
-
----
-
-## Project Overview
-
-PollHub is a full-stack web application that enables users to create, manage, and participate in polls. The application implements secure JWT-based authentication, real-time vote tracking, and voter transparency features.
-
-### Objectives
-
-- Demonstrate proficiency in Go programming language and RESTful API design
-- Implement a responsive React frontend with TypeScript
-- Utilize an ORM (ent) for database operations
-- Apply industry-standard authentication mechanisms (JWT)
-- Deploy a production-ready application
+<p align="center">
+  <a href="https://poll-app-frontend-ylqk.onrender.com">View Demo</a>
+  &nbsp;&middot;&nbsp;
+  <a href="#quick-start">Quick Start</a>
+  &nbsp;&middot;&nbsp;
+  <a href="#api-reference">API Docs</a>
+</p>
 
 ---
 
-## Features
+## Overview
 
-### Authentication
-- User registration with secure password hashing (bcrypt)
-- JWT-based session management
-- Protected routes and API endpoints
+PollHub is a complete polling solution built with **Go** on the backend and **React** on the frontend. It demonstrates modern web development practices including JWT authentication, RESTful API design, and responsive UI/UX.
 
-### Poll Management
-- Create polls with multiple options
-- Edit existing polls (restricted to poll creators)
-- Delete polls (restricted to poll creators)
-- List all available polls with pagination support
+### Key Features
 
-### Voting System
-- One vote per user per poll (enforced at database level)
-- Real-time vote count display after participation
-- Voter transparency: view all users who selected each option
-
-### User Interface
-- Responsive design for desktop and mobile devices
-- Modern, accessible component architecture
-- Loading states and error handling
+| Feature | Description |
+|---------|-------------|
+| **User Authentication** | Secure sign-up and login with JWT tokens |
+| **Poll Management** | Create, edit, and delete polls with multiple options |
+| **Voting System** | One vote per user per poll, enforced at database level |
+| **Live Results** | View vote counts and percentages after voting |
+| **Voter Transparency** | Click on any vote count to see who voted for that option |
+| **Responsive Design** | Works seamlessly on desktop and mobile devices |
 
 ---
 
-## Technology Stack
+## Quick Start
+
+### Prerequisites
+
+- [Go 1.21+](https://golang.org/dl/)
+- [Node.js 18+](https://nodejs.org/)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/bPratyush/poll_app.git
+cd poll_app
+```
+
+### 2. Start the Backend
+
+```bash
+cd backend
+go mod tidy
+go run main.go
+```
+
+Server runs at `http://localhost:8080`
+
+### 3. Start the Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App runs at `http://localhost:3000`
+
+### 4. Open in Browser
+
+Navigate to `http://localhost:3000`, create an account, and start polling!
+
+---
+
+## Tech Stack
+
+<table>
+<tr>
+<td width="50%" valign="top">
 
 ### Backend
+- **Go** - Fast, compiled language
+- **httprouter** - Lightweight HTTP router
+- **ent** - Type-safe ORM by Facebook
+- **SQLite** - Embedded database
+- **JWT** - Stateless authentication
+- **bcrypt** - Password hashing
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Language | Go 1.21+ | Server-side logic |
-| Router | httprouter | HTTP request routing |
-| ORM | ent (entgo.io) | Database operations |
-| Database | SQLite | Data persistence |
-| Authentication | golang-jwt/v5 | JWT token management |
-| Password Hashing | bcrypt | Secure credential storage |
-| CORS | rs/cors | Cross-origin resource sharing |
+</td>
+<td width="50%" valign="top">
 
 ### Frontend
+- **React 18** - UI component library
+- **TypeScript** - Type-safe JavaScript
+- **Vite** - Next-gen build tool
+- **Axios** - HTTP client
+- **React Router v6** - Client-side routing
+- **CSS Variables** - Theming system
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Framework | React 18 | UI component library |
-| Language | TypeScript | Type-safe JavaScript |
-| Build Tool | Vite 5 | Development and bundling |
-| HTTP Client | Axios | API communication |
-| Routing | React Router v6 | Client-side navigation |
-| Styling | CSS3 | Custom styling with CSS variables |
-
----
-
-## System Architecture
-
-```
-+-------------------+         HTTPS         +-------------------+
-|                   |  <------------------> |                   |
-|   React Frontend  |                       |    Go Backend     |
-|   (Static Site)   |                       |   (Docker/API)    |
-|                   |                       |                   |
-+-------------------+                       +-------------------+
-        |                                           |
-        | Served via CDN                            | SQLite
-        |                                           |
-+-------------------+                       +-------------------+
-|   User Browser    |                       |     Database      |
-+-------------------+                       +-------------------+
-```
-
-### Request Flow
-
-1. User interacts with React frontend in browser
-2. Frontend makes authenticated API requests to backend
-3. Backend validates JWT token and processes request
-4. Backend queries/updates SQLite database via ent ORM
-5. Response returned to frontend for rendering
+</td>
+</tr>
+</table>
 
 ---
 
-## Database Design
-
-### Entity-Relationship Diagram
+## Architecture
 
 ```
-+-------------+       +-------------+       +---------------+
-|    User     |       |    Poll     |       |  PollOption   |
-+-------------+       +-------------+       +---------------+
-| id (PK)     |<----->| id (PK)     |<----->| id (PK)       |
-| username    |   1:N | title       |   1:N | text          |
-| email       |       | description |       | poll_id (FK)  |
-| password    |       | creator_id  |       +---------------+
-| created_at  |       | created_at  |               |
-+-------------+       | updated_at  |               |
-      |               +-------------+               |
-      |                                             |
-      |               +-------------+               |
-      +-------------->|    Vote     |<--------------+
-                  1:N +-------------+ N:1
-                      | id (PK)     |
-                      | user_id(FK) |
-                      | option_id   |
-                      | created_at  |
-                      +-------------+
+┌─────────────────────────────────────────────────────────────┐
+│                         Client                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 React Frontend                       │   │
+│  │         (Static files served via CDN)                │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              │ HTTPS (REST API)
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         Server                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                  Go Backend                          │   │
+│  │     httprouter │ JWT Auth │ ent ORM │ CORS          │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                              │                              │
+│                              ▼                              │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                 SQLite Database                      │   │
+│  │        Users │ Polls │ Options │ Votes              │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Table Specifications
+---
+
+## Database Schema
+
+<details>
+<summary><strong>View Entity Relationship Diagram</strong></summary>
+
+```
+┌──────────────┐       ┌──────────────┐       ┌──────────────┐
+│    Users     │       │    Polls     │       │   Options    │
+├──────────────┤       ├──────────────┤       ├──────────────┤
+│ id (PK)      │──┐    │ id (PK)      │──┐    │ id (PK)      │
+│ username     │  │    │ title        │  │    │ text         │
+│ email        │  │    │ description  │  │    │ poll_id (FK) │◄─┐
+│ password     │  │    │ creator_id   │◄─┘    └──────────────┘  │
+│ created_at   │  │    │ created_at   │              │          │
+└──────────────┘  │    │ updated_at   │              │          │
+       │          │    └──────────────┘              │          │
+       │          │                                  │          │
+       │          │    ┌──────────────┐              │          │
+       │          └───►│    Votes     │◄─────────────┘          │
+       │               ├──────────────┤                         │
+       └──────────────►│ id (PK)      │                         │
+                       │ user_id (FK) │                         │
+                       │ option_id(FK)│─────────────────────────┘
+                       │ created_at   │
+                       └──────────────┘
+```
+
+</details>
+
+<details>
+<summary><strong>View Table Definitions</strong></summary>
 
 #### Users
 | Column | Type | Constraints |
 |--------|------|-------------|
-| id | INTEGER | PRIMARY KEY, AUTO INCREMENT |
-| username | VARCHAR(255) | UNIQUE, NOT NULL |
-| email | VARCHAR(255) | UNIQUE, NOT NULL |
-| password | VARCHAR(255) | NOT NULL |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| id | INTEGER | PRIMARY KEY |
+| username | VARCHAR | UNIQUE, NOT NULL |
+| email | VARCHAR | UNIQUE, NOT NULL |
+| password | VARCHAR | NOT NULL (hashed) |
+| created_at | TIMESTAMP | DEFAULT NOW |
 
 #### Polls
 | Column | Type | Constraints |
 |--------|------|-------------|
-| id | INTEGER | PRIMARY KEY, AUTO INCREMENT |
-| title | VARCHAR(255) | NOT NULL |
+| id | INTEGER | PRIMARY KEY |
+| title | VARCHAR | NOT NULL |
 | description | TEXT | NULLABLE |
-| creator_id | INTEGER | FOREIGN KEY (users.id) |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| creator_id | INTEGER | FOREIGN KEY → users |
+| created_at | TIMESTAMP | DEFAULT NOW |
+| updated_at | TIMESTAMP | DEFAULT NOW |
 
 #### PollOptions
 | Column | Type | Constraints |
 |--------|------|-------------|
-| id | INTEGER | PRIMARY KEY, AUTO INCREMENT |
-| text | VARCHAR(255) | NOT NULL |
-| poll_id | INTEGER | FOREIGN KEY (polls.id), ON DELETE CASCADE |
+| id | INTEGER | PRIMARY KEY |
+| text | VARCHAR | NOT NULL |
+| poll_id | INTEGER | FOREIGN KEY → polls (CASCADE) |
 
 #### Votes
 | Column | Type | Constraints |
 |--------|------|-------------|
-| id | INTEGER | PRIMARY KEY, AUTO INCREMENT |
-| user_id | INTEGER | FOREIGN KEY (users.id) |
-| option_id | INTEGER | FOREIGN KEY (poll_options.id), ON DELETE CASCADE |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| id | INTEGER | PRIMARY KEY |
+| user_id | INTEGER | FOREIGN KEY → users |
+| option_id | INTEGER | FOREIGN KEY → options (CASCADE) |
+| created_at | TIMESTAMP | DEFAULT NOW |
 | | | UNIQUE(user_id, option_id) |
+
+</details>
 
 ---
 
-## API Documentation
+## API Reference
 
-### Base URL
-- Development: `http://localhost:8080/api`
-- Production: `https://poll-app-backend-lj26.onrender.com/api`
+Base URL: `https://poll-app-backend-lj26.onrender.com/api`
 
-### Authentication Endpoints
+### Authentication
 
-#### Register User
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/signup` | Register new user |
+| `POST` | `/api/auth/login` | Login and get token |
+| `GET` | `/api/auth/me` | Get current user |
+
+### Polls
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/polls` | List all polls |
+| `POST` | `/api/polls` | Create a poll |
+| `GET` | `/api/polls/:id` | Get poll details |
+| `PUT` | `/api/polls/:id` | Update a poll |
+| `DELETE` | `/api/polls/:id` | Delete a poll |
+
+### Voting
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/polls/:id/vote` | Vote on a poll |
+| `GET` | `/api/options/:id/voters` | Get voters for option |
+
+<details>
+<summary><strong>View Request/Response Examples</strong></summary>
+
+#### Sign Up
+```http
 POST /api/auth/signup
 Content-Type: application/json
 
-Request:
 {
-  "username": "string",
-  "email": "string",
-  "password": "string"
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "securepassword"
 }
+```
 
-Response: 201 Created
+Response:
+```json
 {
-  "token": "jwt_token",
+  "token": "eyJhbGciOiJIUzI1NiIs...",
   "user": {
     "id": 1,
-    "username": "string",
-    "email": "string"
+    "username": "john_doe",
+    "email": "john@example.com"
   }
 }
-```
-
-#### Login
-```
-POST /api/auth/login
-Content-Type: application/json
-
-Request:
-{
-  "email": "string",
-  "password": "string"
-}
-
-Response: 200 OK
-{
-  "token": "jwt_token",
-  "user": {
-    "id": 1,
-    "username": "string",
-    "email": "string"
-  }
-}
-```
-
-#### Get Current User
-```
-GET /api/auth/me
-Authorization: Bearer <token>
-
-Response: 200 OK
-{
-  "id": 1,
-  "username": "string",
-  "email": "string"
-}
-```
-
-### Poll Endpoints
-
-#### List Polls
-```
-GET /api/polls
-Authorization: Bearer <token>
-
-Response: 200 OK
-[
-  {
-    "id": 1,
-    "title": "string",
-    "description": "string",
-    "creator": { "id": 1, "username": "string" },
-    "options": [
-      { "id": 1, "text": "string", "vote_count": 0 }
-    ],
-    "user_voted_option_id": null,
-    "created_at": "2026-01-12T00:00:00Z"
-  }
-]
 ```
 
 #### Create Poll
-```
+```http
 POST /api/polls
 Authorization: Bearer <token>
 Content-Type: application/json
 
-Request:
 {
-  "title": "string",
-  "description": "string",
-  "options": ["Option 1", "Option 2"]
+  "title": "Favorite Programming Language?",
+  "description": "Vote for your preferred language",
+  "options": ["Go", "Python", "JavaScript", "Rust"]
 }
-
-Response: 201 Created
 ```
 
-#### Get Poll
-```
-GET /api/polls/:id
-Authorization: Bearer <token>
-
-Response: 200 OK
-```
-
-#### Update Poll
-```
-PUT /api/polls/:id
+#### Vote
+```http
+POST /api/polls/1/vote
 Authorization: Bearer <token>
 Content-Type: application/json
 
-Request:
-{
-  "title": "string",
-  "description": "string",
-  "options": [
-    { "id": 1, "text": "Updated Option" },
-    { "text": "New Option" }
-  ]
-}
-
-Response: 200 OK
-```
-
-#### Delete Poll
-```
-DELETE /api/polls/:id
-Authorization: Bearer <token>
-
-Response: 204 No Content
-```
-
-### Voting Endpoints
-
-#### Submit Vote
-```
-POST /api/polls/:id/vote
-Authorization: Bearer <token>
-Content-Type: application/json
-
-Request:
 {
   "option_id": 1
 }
-
-Response: 200 OK
 ```
 
-#### Get Voters for Option
-```
-GET /api/options/:id/voters
-Authorization: Bearer <token>
-
-Response: 200 OK
-[
-  { "id": 1, "username": "string", "email": "string" }
-]
-```
-
----
-
-## Installation Guide
-
-### Prerequisites
-
-- Go 1.21 or higher
-- Node.js 18 or higher
-- npm 9 or higher
-- Git
-
-### Backend Setup
-
-```bash
-# Navigate to backend directory
-cd backend
-
-# Download Go dependencies
-go mod tidy
-
-# Generate ent schema code
-go generate ./ent
-
-# Start the development server
-go run main.go
-```
-
-The backend server will start at `http://localhost:8080`
-
-### Frontend Setup
-
-```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install npm dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-The frontend application will be available at `http://localhost:3000`
-
-### Environment Variables
-
-#### Backend
-| Variable | Description | Default |
-|----------|-------------|---------|
-| PORT | Server port | 8080 |
-| DATABASE_PATH | SQLite file path | poll_app.db |
-| JWT_SECRET | JWT signing key | (required in production) |
-| FRONTEND_URL | Allowed CORS origin | http://localhost:3000 |
-
-#### Frontend
-| Variable | Description | Default |
-|----------|-------------|---------|
-| VITE_API_URL | Backend API URL | http://localhost:8080 |
-
----
-
-## Deployment
-
-### Production URLs
-
-- Frontend: https://poll-app-frontend-ylqk.onrender.com
-- Backend: https://poll-app-backend-lj26.onrender.com
-
-### Render Platform Deployment
-
-The application is configured for deployment on Render using the included `render.yaml` blueprint file.
-
-#### Automated Deployment (Recommended)
-
-1. Push code to GitHub repository
-2. Navigate to Render Dashboard
-3. Select "New" followed by "Blueprint"
-4. Connect the GitHub repository
-5. Render will automatically detect `render.yaml` and configure both services
-
-#### Manual Deployment
-
-##### Backend Service
-1. Create new Web Service on Render
-2. Configure as Docker runtime
-3. Set root directory to `backend`
-4. Configure environment variables as specified above
-
-##### Frontend Service
-1. Create new Static Site on Render
-2. Set root directory to `frontend`
-3. Build command: `npm ci && npx tsc && npx vite build`
-4. Publish directory: `dist`
-5. Add rewrite rule: `/*` to `/index.html`
-
-### Deployment Considerations
-
-- Free tier services enter sleep mode after 15 minutes of inactivity
-- Initial request after sleep may experience 30-60 second delay
-- SQLite database persists within the container but resets on redeployment
-- For production use, consider migrating to PostgreSQL
+</details>
 
 ---
 
@@ -449,56 +299,120 @@ The application is configured for deployment on Render using the included `rende
 
 ```
 poll_app/
-├── README.md
-├── render.yaml                 # Render deployment configuration
 ├── backend/
-│   ├── Dockerfile              # Container configuration
-│   ├── go.mod                  # Go module definition
-│   ├── go.sum                  # Dependency checksums
-│   ├── main.go                 # Application entry point
+│   ├── main.go              # Application entry point
+│   ├── Dockerfile           # Container configuration
 │   ├── handlers/
-│   │   └── handlers.go         # HTTP request handlers
+│   │   └── handlers.go      # API route handlers
 │   └── ent/
-│       ├── schema/             # Database entity definitions
-│       │   ├── user.go
-│       │   ├── poll.go
-│       │   ├── option.go
-│       │   └── vote.go
-│       └── [generated files]   # Auto-generated ORM code
-└── frontend/
-    ├── package.json            # Node.js dependencies
-    ├── tsconfig.json           # TypeScript configuration
-    ├── vite.config.ts          # Vite build configuration
-    ├── index.html              # HTML entry point
-    └── src/
-        ├── main.tsx            # React entry point
-        ├── App.tsx             # Root component
-        ├── index.css           # Global styles
-        ├── types/
-        │   └── index.ts        # TypeScript type definitions
-        ├── services/
-        │   └── api.ts          # API client configuration
-        ├── context/
-        │   └── AuthContext.tsx # Authentication state management
-        ├── components/
-        │   └── Navbar.tsx      # Navigation component
-        └── pages/
-            ├── Login.tsx       # Login page
-            ├── SignUp.tsx      # Registration page
-            ├── Polls.tsx       # Poll listing page
-            ├── CreatePoll.tsx  # Poll creation page
-            ├── EditPoll.tsx    # Poll editing page
-            └── PollDetail.tsx  # Poll detail and voting page
+│       └── schema/          # Database models
+│           ├── user.go
+│           ├── poll.go
+│           ├── option.go
+│           └── vote.go
+│
+├── frontend/
+│   ├── src/
+│   │   ├── pages/           # Route components
+│   │   ├── components/      # Reusable UI components
+│   │   ├── context/         # React context (auth)
+│   │   ├── services/        # API client
+│   │   └── types/           # TypeScript definitions
+│   ├── index.html
+│   └── vite.config.ts
+│
+├── render.yaml              # Deployment configuration
+└── README.md
 ```
+
+---
+
+## Deployment
+
+The application is deployed on [Render](https://render.com) with the following setup:
+
+| Service | Type | URL |
+|---------|------|-----|
+| Backend | Docker Web Service | [poll-app-backend-lj26.onrender.com](https://poll-app-backend-lj26.onrender.com) |
+| Frontend | Static Site | [poll-app-frontend-ylqk.onrender.com](https://poll-app-frontend-ylqk.onrender.com) |
+
+<details>
+<summary><strong>Deploy Your Own Instance</strong></summary>
+
+### Using Render Blueprint (Recommended)
+
+1. Fork this repository
+2. Go to [Render Dashboard](https://dashboard.render.com)
+3. Click **New** → **Blueprint**
+4. Connect your forked repository
+5. Render auto-detects `render.yaml` and deploys both services
+
+### Environment Variables
+
+#### Backend
+| Variable | Description |
+|----------|-------------|
+| `PORT` | Server port (default: 8080) |
+| `DATABASE_PATH` | SQLite file path |
+| `JWT_SECRET` | Token signing secret |
+| `FRONTEND_URL` | CORS allowed origin |
+
+#### Frontend
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Backend API URL |
+
+</details>
+
+---
+
+## Development
+
+### Running Tests
+
+```bash
+# Backend
+cd backend
+go test ./...
+
+# Frontend
+cd frontend
+npm test
+```
+
+### Building for Production
+
+```bash
+# Backend
+cd backend
+go build -o poll_app
+
+# Frontend
+cd frontend
+npm run build
+```
+
+---
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## License
 
-This project was developed as part of a technical exercise for demonstrating full-stack development capabilities.
+This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-## Author
-
-Pratyush Bindal
+<p align="center">
+  <strong>Built with Go and React</strong><br>
+  <sub>Pratyush Bindal</sub>
+</p>
