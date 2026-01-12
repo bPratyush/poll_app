@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Poll, User } from '../types';
 import { pollAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+
+// Polling interval in milliseconds (5 seconds)
+const POLL_INTERVAL = 5000;
 
 // Mark poll update as seen in localStorage
 const markUpdateAsSeen = (pollId: number, updatedAt: string) => {
@@ -29,9 +32,35 @@ function PollDetail() {
   const [showUpdateNotice, setShowUpdateNotice] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchPoll();
+  const fetchPoll = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    try {
+      const response = await pollAPI.get(Number(id));
+      setPoll(response.data);
+      if (response.data.user_voted_option_id) {
+        setSelectedOption(response.data.user_voted_option_id);
+      }
+      setError('');
+    } catch {
+      setError('Failed to fetch poll');
+    } finally {
+      if (showLoading) setLoading(false);
+    }
   }, [id]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchPoll(true);
+  }, [fetchPoll]);
+
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchPoll(false);
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [fetchPoll]);
 
   // Mark update as seen when user views the poll
   useEffect(() => {
@@ -39,20 +68,6 @@ function PollDetail() {
       markUpdateAsSeen(poll.id, poll.updated_at);
     }
   }, [poll]);
-
-  const fetchPoll = async () => {
-    try {
-      const response = await pollAPI.get(Number(id));
-      setPoll(response.data);
-      if (response.data.user_voted_option_id) {
-        setSelectedOption(response.data.user_voted_option_id);
-      }
-    } catch {
-      setError('Failed to fetch poll');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleVote = async () => {
     if (!selectedOption || !poll) return;

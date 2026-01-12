@@ -35,5 +35,6 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("polls", Poll.Type),
 		edge.To("votes", Vote.Type),
+		edge.To("notifications", Notification.Type),
 	}
 }

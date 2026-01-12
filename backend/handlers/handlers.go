@@ -3,12 +3,14 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"poll_app/ent"
+	"poll_app/ent/notification"
 	"poll_app/ent/poll"
 	"poll_app/ent/polloption"
 	"poll_app/ent/user"
@@ -586,12 +588,24 @@ func (h *Handler) Vote(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	// Check if user already voted on this poll
 	p, _ := h.client.Poll.Query().
 		Where(poll.ID(pollID)).
+		WithCreator().
 		WithOptions(func(q *ent.PollOptionQuery) {
 			q.WithVotes(func(vq *ent.VoteQuery) {
 				vq.Where(vote.HasUserWith(user.ID(u.ID)))
 			})
 		}).
 		Only(context.Background())
+
+	// Track if this is a vote change
+	isVoteChange := false
+	var previousOptionText string
+	for _, o := range p.Edges.Options {
+		if len(o.Edges.Votes) > 0 {
+			isVoteChange = true
+			previousOptionText = o.Text
+			break
+		}
+	}
 
 	tx, err := h.client.Tx(context.Background())
 	if err != nil {
@@ -615,6 +629,22 @@ func (h *Handler) Vote(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		tx.Rollback()
 		errorResponse(w, http.StatusInternalServerError, "Failed to create vote")
 		return
+	}
+
+	// Create notification for poll creator if vote was changed (not for creator's own votes)
+	if isVoteChange && p.Edges.Creator.ID != u.ID {
+		message := fmt.Sprintf("%s changed their vote on \"%s\" from \"%s\" to \"%s\"",
+			u.Username, p.Title, previousOptionText, opt.Text)
+		_, err = tx.Notification.Create().
+			SetMessage(message).
+			SetType("vote_changed").
+			SetPollID(pollID).
+			SetUserID(p.Edges.Creator.ID).
+			Save(context.Background())
+		if err != nil {
+			// Log but don't fail the vote
+			_ = err
+		}
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -695,4 +725,113 @@ func pollToDTO(p *ent.Poll, votedOptionID *int, userVoteTime *time.Time) PollDTO
 		UserVotedOptionID:   votedOptionID,
 		PollEditedAfterVote: pollEditedAfterVote,
 	}
+}
+
+// Notification DTOs
+type NotificationDTO struct {
+	ID        int       `json:"id"`
+	Message   string    `json:"message"`
+	Type      string    `json:"type"`
+	PollID    int       `json:"poll_id,omitempty"`
+	Read      bool      `json:"read"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetNotifications returns all notifications for the current user
+func (h *Handler) GetNotifications(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	u := r.Context().Value(userContextKey).(*ent.User)
+
+	notifications, err := h.client.Notification.Query().
+		Where(notification.HasUserWith(user.ID(u.ID))).
+		Order(ent.Desc(notification.FieldCreatedAt)).
+		Limit(50).
+		All(context.Background())
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to fetch notifications")
+		return
+	}
+
+	dtos := make([]NotificationDTO, len(notifications))
+	for i, n := range notifications {
+		dtos[i] = NotificationDTO{
+			ID:        n.ID,
+			Message:   n.Message,
+			Type:      n.Type,
+			PollID:    n.PollID,
+			Read:      n.Read,
+			CreatedAt: n.CreatedAt,
+		}
+	}
+
+	jsonResponse(w, http.StatusOK, dtos)
+}
+
+// GetUnreadCount returns the count of unread notifications
+func (h *Handler) GetUnreadCount(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	u := r.Context().Value(userContextKey).(*ent.User)
+
+	count, err := h.client.Notification.Query().
+		Where(
+			notification.HasUserWith(user.ID(u.ID)),
+			notification.Read(false),
+		).
+		Count(context.Background())
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to count notifications")
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, map[string]int{"count": count})
+}
+
+// MarkNotificationRead marks a notification as read
+func (h *Handler) MarkNotificationRead(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	u := r.Context().Value(userContextKey).(*ent.User)
+
+	notifID, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid notification ID")
+		return
+	}
+
+	// Verify notification belongs to user
+	n, err := h.client.Notification.Query().
+		Where(
+			notification.ID(notifID),
+			notification.HasUserWith(user.ID(u.ID)),
+		).
+		Only(context.Background())
+	if err != nil {
+		errorResponse(w, http.StatusNotFound, "Notification not found")
+		return
+	}
+
+	_, err = h.client.Notification.UpdateOne(n).
+		SetRead(true).
+		Save(context.Background())
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to update notification")
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "Notification marked as read"})
+}
+
+// MarkAllNotificationsRead marks all notifications as read for the current user
+func (h *Handler) MarkAllNotificationsRead(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	u := r.Context().Value(userContextKey).(*ent.User)
+
+	_, err := h.client.Notification.Update().
+		Where(
+			notification.HasUserWith(user.ID(u.ID)),
+			notification.Read(false),
+		).
+		SetRead(true).
+		Save(context.Background())
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, "Failed to update notifications")
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, map[string]string{"message": "All notifications marked as read"})
 }

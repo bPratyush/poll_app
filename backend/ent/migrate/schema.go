@@ -8,6 +8,30 @@ import (
 )
 
 var (
+	// NotificationsColumns holds the columns for the "notifications" table.
+	NotificationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "message", Type: field.TypeString},
+		{Name: "type", Type: field.TypeString, Default: "vote_changed"},
+		{Name: "poll_id", Type: field.TypeInt, Nullable: true},
+		{Name: "read", Type: field.TypeBool, Default: false},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_notifications", Type: field.TypeInt},
+	}
+	// NotificationsTable holds the schema information for the "notifications" table.
+	NotificationsTable = &schema.Table{
+		Name:       "notifications",
+		Columns:    NotificationsColumns,
+		PrimaryKey: []*schema.Column{NotificationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "notifications_users_notifications",
+				Columns:    []*schema.Column{NotificationsColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// PollsColumns holds the columns for the "polls" table.
 	PollsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -101,6 +125,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		NotificationsTable,
 		PollsTable,
 		PollOptionsTable,
 		UsersTable,
@@ -109,6 +134,7 @@ var (
 )
 
 func init() {
+	NotificationsTable.ForeignKeys[0].RefTable = UsersTable
 	PollsTable.ForeignKeys[0].RefTable = UsersTable
 	PollOptionsTable.ForeignKeys[0].RefTable = PollsTable
 	VotesTable.ForeignKeys[0].RefTable = PollOptionsTable

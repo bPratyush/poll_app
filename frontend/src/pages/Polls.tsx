@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Poll } from '../types';
 import { pollAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+
+// Polling interval in milliseconds (5 seconds)
+const POLL_INTERVAL = 5000;
 
 // Helper to check if user has seen the poll update
 const getSeenUpdates = (): Record<number, string> => {
@@ -24,20 +27,32 @@ function Polls() {
   const [error, setError] = useState('');
   const { user } = useAuth();
 
-  useEffect(() => {
-    fetchPolls();
-  }, []);
-
-  const fetchPolls = async () => {
+  const fetchPolls = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
     try {
       const response = await pollAPI.list();
       setPolls(response.data);
+      setError('');
     } catch {
       setError('Failed to fetch polls');
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
-  };
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchPolls(true);
+  }, [fetchPolls]);
+
+  // Auto-refresh every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchPolls(false);
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [fetchPolls]);
 
   const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this poll?')) return;

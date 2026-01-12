@@ -37,9 +37,11 @@ type UserEdges struct {
 	Polls []*Poll `json:"polls,omitempty"`
 	// Votes holds the value of the votes edge.
 	Votes []*Vote `json:"votes,omitempty"`
+	// Notifications holds the value of the notifications edge.
+	Notifications []*Notification `json:"notifications,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // PollsOrErr returns the Polls value or an error if the edge
@@ -58,6 +60,15 @@ func (e UserEdges) VotesOrErr() ([]*Vote, error) {
 		return e.Votes, nil
 	}
 	return nil, &NotLoadedError{edge: "votes"}
+}
+
+// NotificationsOrErr returns the Notifications value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) NotificationsOrErr() ([]*Notification, error) {
+	if e.loadedTypes[2] {
+		return e.Notifications, nil
+	}
+	return nil, &NotLoadedError{edge: "notifications"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -137,6 +148,11 @@ func (u *User) QueryPolls() *PollQuery {
 // QueryVotes queries the "votes" edge of the User entity.
 func (u *User) QueryVotes() *VoteQuery {
 	return NewUserClient(u.config).QueryVotes(u)
+}
+
+// QueryNotifications queries the "notifications" edge of the User entity.
+func (u *User) QueryNotifications() *NotificationQuery {
+	return NewUserClient(u.config).QueryNotifications(u)
 }
 
 // Update returns a builder for updating this User.

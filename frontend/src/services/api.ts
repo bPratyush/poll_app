@@ -66,4 +66,15 @@ export const pollAPI = {
     api.get(`/api/options/${optionId}/voters`),
 };
 
+// Notification APIs
+export const notificationAPI = {
+  list: () => api.get('/api/notifications'),
+  
+  getUnreadCount: () => api.get('/api/notifications/unread-count'),
+  
+  markAsRead: (id: number) => api.put(`/api/notifications/${id}/read`),
+  
+  markAllAsRead: () => api.put('/api/notifications/read-all'),
+};
+
 export default api;

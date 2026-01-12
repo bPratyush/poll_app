@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"poll_app/ent/notification"
 	"poll_app/ent/poll"
 	"poll_app/ent/polloption"
 	"poll_app/ent/schema"
@@ -15,6 +16,24 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	notificationFields := schema.Notification{}.Fields()
+	_ = notificationFields
+	// notificationDescMessage is the schema descriptor for message field.
+	notificationDescMessage := notificationFields[0].Descriptor()
+	// notification.MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	notification.MessageValidator = notificationDescMessage.Validators[0].(func(string) error)
+	// notificationDescType is the schema descriptor for type field.
+	notificationDescType := notificationFields[1].Descriptor()
+	// notification.DefaultType holds the default value on creation for the type field.
+	notification.DefaultType = notificationDescType.Default.(string)
+	// notificationDescRead is the schema descriptor for read field.
+	notificationDescRead := notificationFields[3].Descriptor()
+	// notification.DefaultRead holds the default value on creation for the read field.
+	notification.DefaultRead = notificationDescRead.Default.(bool)
+	// notificationDescCreatedAt is the schema descriptor for created_at field.
+	notificationDescCreatedAt := notificationFields[4].Descriptor()
+	// notification.DefaultCreatedAt holds the default value on creation for the created_at field.
+	notification.DefaultCreatedAt = notificationDescCreatedAt.Default.(func() time.Time)
 	pollFields := schema.Poll{}.Fields()
 	_ = pollFields
 	// pollDescTitle is the schema descriptor for title field.

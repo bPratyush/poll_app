@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Notification is the predicate function for notification builders.
+type Notification func(*sql.Selector)
+
 // Poll is the predicate function for poll builders.
 type Poll func(*sql.Selector)
 

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"poll_app/ent/notification"
 	"poll_app/ent/poll"
 	"poll_app/ent/polloption"
 	"poll_app/ent/user"
@@ -76,10 +77,11 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			poll.Table:       poll.ValidColumn,
-			polloption.Table: polloption.ValidColumn,
-			user.Table:       user.ValidColumn,
-			vote.Table:       vote.ValidColumn,
+			notification.Table: notification.ValidColumn,
+			poll.Table:         poll.ValidColumn,
+			polloption.Table:   polloption.ValidColumn,
+			user.Table:         user.ValidColumn,
+			vote.Table:         vote.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

@@ -77,6 +77,12 @@ func main() {
 	router.POST("/api/polls/:id/vote", h.AuthMiddleware(h.Vote))
 	router.GET("/api/options/:id/voters", h.AuthMiddleware(h.GetVoters))
 
+	// Notification routes
+	router.GET("/api/notifications", h.AuthMiddleware(h.GetNotifications))
+	router.GET("/api/notifications/unread-count", h.AuthMiddleware(h.GetUnreadCount))
+	router.PUT("/api/notifications/:id/read", h.AuthMiddleware(h.MarkNotificationRead))
+	router.PUT("/api/notifications/read-all", h.AuthMiddleware(h.MarkAllNotificationsRead))
+
 	// CORS middleware
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{frontendURL, "http://localhost:3000", "http://localhost:5173"},

@@ -26,3 +26,12 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+
+export interface Notification {
+  id: number;
+  message: string;
+  type: string;
+  poll_id?: number;
+  read: boolean;
+  created_at: string;
+}
