@@ -139,6 +139,8 @@ function PollDetail() {
 
   const hasVoted = poll.user_voted_option_id !== undefined && poll.user_voted_option_id !== null;
   const isOwner = user?.id === poll.creator.id;
+  // Show results if user has voted OR if user is the poll owner
+  const showResults = hasVoted || isOwner;
   const showVotingUI = !hasVoted || isChangingVote;
 
   return (
@@ -190,20 +192,21 @@ function PollDetail() {
 
       <div className="poll-options">
         <p className="poll-options-title">
-          {showVotingUI ? 'Choose an option' : 'Results'}
+          {showVotingUI && !isOwner ? 'Choose an option' : showVotingUI && isOwner ? 'Vote & Results' : 'Results'}
           {isChangingVote && <span style={{ fontWeight: 'normal', fontSize: '0.9rem' }}> (changing vote)</span>}
         </p>
         {poll.options.map((option) => (
           <div
             key={option.id}
-            className={`poll-option ${selectedOption === option.id ? 'selected' : ''} ${!showVotingUI ? 'voted' : ''} ${!showVotingUI && poll.user_voted_option_id === option.id ? 'user-choice' : ''}`}
+            className={`poll-option ${selectedOption === option.id ? 'selected' : ''} ${showResults ? 'voted' : ''} ${showResults && poll.user_voted_option_id === option.id ? 'user-choice' : ''}`}
             onClick={() => showVotingUI && setSelectedOption(option.id)}
+            style={{ cursor: showVotingUI ? 'pointer' : 'default' }}
           >
             {showVotingUI && (
               <div className="poll-option-radio" />
             )}
             <span className="poll-option-text">{option.text}</span>
-            {!showVotingUI && (
+            {showResults && (
               <>
                 <span
                   className="poll-option-count"
@@ -217,7 +220,7 @@ function PollDetail() {
                 </span>
               </>
             )}
-            {!showVotingUI && (
+            {showResults && (
               <div className="poll-option-bar">
                 <div
                   className="poll-option-bar-fill"
@@ -250,6 +253,7 @@ function PollDetail() {
         </div>
       )}
 
+      {/* Footer for users who have voted */}
       {hasVoted && !isChangingVote && (
         <div className="poll-footer">
           <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
@@ -268,8 +272,21 @@ function PollDetail() {
         </div>
       )}
 
-      {/* Back link for users who haven't voted */}
-      {!hasVoted && (
+      {/* Footer for poll owners who haven't voted */}
+      {isOwner && !hasVoted && (
+        <div className="poll-footer">
+          <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
+          <p className="poll-vote-hint">Click on vote counts to see who voted</p>
+          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+            <Link to="/" className="btn btn-secondary">
+              Back to Polls
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Back link for non-owners who haven't voted */}
+      {!hasVoted && !isOwner && (
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
           <Link to="/" className="btn btn-secondary">
             Back to Polls
