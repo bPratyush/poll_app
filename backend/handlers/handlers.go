@@ -232,14 +232,15 @@ type OptionUpdate struct {
 }
 
 type PollDTO struct {
-	ID                int         `json:"id"`
-	Title             string      `json:"title"`
-	Description       string      `json:"description"`
-	Creator           UserDTO     `json:"creator"`
-	Options           []OptionDTO `json:"options"`
-	CreatedAt         time.Time   `json:"created_at"`
-	UpdatedAt         time.Time   `json:"updated_at"`
-	UserVotedOptionID *int        `json:"user_voted_option_id,omitempty"`
+	ID                  int         `json:"id"`
+	Title               string      `json:"title"`
+	Description         string      `json:"description"`
+	Creator             UserDTO     `json:"creator"`
+	Options             []OptionDTO `json:"options"`
+	CreatedAt           time.Time   `json:"created_at"`
+	UpdatedAt           time.Time   `json:"updated_at"`
+	UserVotedOptionID   *int        `json:"user_voted_option_id,omitempty"`
+	PollEditedAfterVote bool        `json:"poll_edited_after_vote"`
 }
 
 type OptionDTO struct {
@@ -306,7 +307,7 @@ func (h *Handler) CreatePoll(w http.ResponseWriter, r *http.Request, _ httproute
 		}).
 		Only(context.Background())
 
-	jsonResponse(w, http.StatusCreated, pollToDTO(p, nil))
+	jsonResponse(w, http.StatusCreated, pollToDTO(p, nil, nil))
 }
 
 func (h *Handler) ListPolls(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -324,28 +325,33 @@ func (h *Handler) ListPolls(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	// Get user's votes
+	// Get user's votes with timestamps
 	userVotes, _ := h.client.Vote.Query().
 		Where(vote.HasUserWith(user.ID(u.ID))).
 		WithOption().
 		All(context.Background())
 
-	userVoteMap := make(map[int]int) // pollID -> optionID
+	userVoteMap := make(map[int]int)           // pollID -> optionID
+	userVoteTimeMap := make(map[int]time.Time) // pollID -> vote time
 	for _, v := range userVotes {
 		opt := v.Edges.Option
 		if opt != nil {
 			pollID, _ := h.client.Poll.Query().Where(poll.HasOptionsWith(polloption.ID(opt.ID))).OnlyID(context.Background())
 			userVoteMap[pollID] = opt.ID
+			userVoteTimeMap[pollID] = v.CreatedAt
 		}
 	}
 
 	dtos := make([]PollDTO, len(polls))
 	for i, p := range polls {
 		var votedOptionID *int
+		var voteTime *time.Time
 		if optID, ok := userVoteMap[p.ID]; ok {
 			votedOptionID = &optID
+			t := userVoteTimeMap[p.ID]
+			voteTime = &t
 		}
-		dtos[i] = pollToDTO(p, votedOptionID)
+		dtos[i] = pollToDTO(p, votedOptionID, voteTime)
 	}
 
 	jsonResponse(w, http.StatusOK, dtos)
@@ -372,19 +378,21 @@ func (h *Handler) GetPoll(w http.ResponseWriter, r *http.Request, ps httprouter.
 		return
 	}
 
-	// Check if user has voted
+	// Check if user has voted and get vote time
 	var votedOptionID *int
+	var userVoteTime *time.Time
 	for _, opt := range p.Edges.Options {
 		for _, v := range opt.Edges.Votes {
 			voter, _ := h.client.Vote.QueryUser(v).Only(context.Background())
 			if voter != nil && voter.ID == u.ID {
 				votedOptionID = &opt.ID
+				userVoteTime = &v.CreatedAt
 				break
 			}
 		}
 	}
 
-	jsonResponse(w, http.StatusOK, pollToDTO(p, votedOptionID))
+	jsonResponse(w, http.StatusOK, pollToDTO(p, votedOptionID, userVoteTime))
 }
 
 func (h *Handler) UpdatePoll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -487,7 +495,7 @@ func (h *Handler) UpdatePoll(w http.ResponseWriter, r *http.Request, ps httprout
 		}).
 		Only(context.Background())
 
-	jsonResponse(w, http.StatusOK, pollToDTO(p, nil))
+	jsonResponse(w, http.StatusOK, pollToDTO(p, nil, nil))
 }
 
 func (h *Handler) DeletePoll(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -624,7 +632,8 @@ func (h *Handler) Vote(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		Only(context.Background())
 
 	votedOptionID := req.OptionID
-	jsonResponse(w, http.StatusOK, pollToDTO(p, &votedOptionID))
+	now := time.Now()
+	jsonResponse(w, http.StatusOK, pollToDTO(p, &votedOptionID, &now))
 }
 
 func (h *Handler) GetVoters(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -655,7 +664,7 @@ func (h *Handler) GetVoters(w http.ResponseWriter, r *http.Request, ps httproute
 	jsonResponse(w, http.StatusOK, voters)
 }
 
-func pollToDTO(p *ent.Poll, votedOptionID *int) PollDTO {
+func pollToDTO(p *ent.Poll, votedOptionID *int, userVoteTime *time.Time) PollDTO {
 	options := make([]OptionDTO, len(p.Edges.Options))
 	for i, opt := range p.Edges.Options {
 		options[i] = OptionDTO{
@@ -663,6 +672,12 @@ func pollToDTO(p *ent.Poll, votedOptionID *int) PollDTO {
 			Text:      opt.Text,
 			VoteCount: len(opt.Edges.Votes),
 		}
+	}
+
+	// Check if poll was edited after user voted
+	pollEditedAfterVote := false
+	if userVoteTime != nil && p.UpdatedAt.After(*userVoteTime) {
+		pollEditedAfterVote = true
 	}
 
 	return PollDTO{
@@ -674,9 +689,10 @@ func pollToDTO(p *ent.Poll, votedOptionID *int) PollDTO {
 			Username: p.Edges.Creator.Username,
 			Email:    p.Edges.Creator.Email,
 		},
-		Options:           options,
-		CreatedAt:         p.CreatedAt,
-		UpdatedAt:         p.UpdatedAt,
-		UserVotedOptionID: votedOptionID,
+		Options:             options,
+		CreatedAt:           p.CreatedAt,
+		UpdatedAt:           p.UpdatedAt,
+		UserVotedOptionID:   votedOptionID,
+		PollEditedAfterVote: pollEditedAfterVote,
 	}
 }

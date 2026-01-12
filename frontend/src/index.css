@@ -928,6 +928,16 @@ body {
   content: '✓';
 }
 
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.alert-warning::before {
+  content: '';
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
   .main-content {

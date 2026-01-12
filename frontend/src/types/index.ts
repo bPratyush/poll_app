@@ -19,6 +19,7 @@ export interface Poll {
   created_at: string;
   updated_at: string;
   user_voted_option_id?: number;
+  poll_edited_after_vote?: boolean;
 }
 
 export interface AuthResponse {

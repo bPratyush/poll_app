@@ -14,6 +14,7 @@ function PollDetail() {
   const [showVoters, setShowVoters] = useState<number | null>(null);
   const [voters, setVoters] = useState<User[]>([]);
   const [loadingVoters, setLoadingVoters] = useState(false);
+  const [isChangingVote, setIsChangingVote] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -41,11 +42,24 @@ function PollDetail() {
     try {
       const response = await pollAPI.vote(poll.id, selectedOption);
       setPoll(response.data);
+      setIsChangingVote(false);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to vote');
     } finally {
       setVoting(false);
+    }
+  };
+
+  const handleChangeVote = () => {
+    setIsChangingVote(true);
+    setSelectedOption(null);
+  };
+
+  const handleCancelChange = () => {
+    setIsChangingVote(false);
+    if (poll?.user_voted_option_id) {
+      setSelectedOption(poll.user_voted_option_id);
     }
   };
 
@@ -81,6 +95,7 @@ function PollDetail() {
 
   const hasVoted = poll.user_voted_option_id !== undefined && poll.user_voted_option_id !== null;
   const isOwner = user?.id === poll.creator.id;
+  const showVotingUI = !hasVoted || isChangingVote;
 
   return (
     <div className="poll-detail">
@@ -104,19 +119,30 @@ function PollDetail() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
+      {/* Poll Edited After Vote Notification */}
+      {poll.poll_edited_after_vote && hasVoted && !isChangingVote && (
+        <div className="alert alert-warning" style={{ marginBottom: '1.5rem' }}>
+          <strong>⚠️ Poll Updated:</strong> This poll was modified after you voted. 
+          You may want to review the options and change your vote if needed.
+        </div>
+      )}
+
       <div className="poll-options">
-        <p className="poll-options-title">{hasVoted ? 'Results' : 'Choose an option'}</p>
+        <p className="poll-options-title">
+          {showVotingUI ? 'Choose an option' : 'Results'}
+          {isChangingVote && <span style={{ fontWeight: 'normal', fontSize: '0.9rem' }}> (changing vote)</span>}
+        </p>
         {poll.options.map((option) => (
           <div
             key={option.id}
-            className={`poll-option ${selectedOption === option.id ? 'selected' : ''} ${hasVoted ? 'voted' : ''} ${hasVoted && poll.user_voted_option_id === option.id ? 'user-choice' : ''}`}
-            onClick={() => !hasVoted && setSelectedOption(option.id)}
+            className={`poll-option ${selectedOption === option.id ? 'selected' : ''} ${!showVotingUI ? 'voted' : ''} ${!showVotingUI && poll.user_voted_option_id === option.id ? 'user-choice' : ''}`}
+            onClick={() => showVotingUI && setSelectedOption(option.id)}
           >
-            {!hasVoted && (
+            {showVotingUI && (
               <div className="poll-option-radio" />
             )}
             <span className="poll-option-text">{option.text}</span>
-            {hasVoted && (
+            {!showVotingUI && (
               <>
                 <span
                   className="poll-option-count"
@@ -130,7 +156,7 @@ function PollDetail() {
                 </span>
               </>
             )}
-            {hasVoted && (
+            {!showVotingUI && (
               <div className="poll-option-bar">
                 <div
                   className="poll-option-bar-fill"
@@ -142,20 +168,38 @@ function PollDetail() {
         ))}
       </div>
 
-      {!hasVoted && (
-        <button
-          className="btn btn-primary w-full"
-          onClick={handleVote}
-          disabled={!selectedOption || voting}
-        >
-          {voting ? 'Submitting...' : '🗳️ Submit Vote'}
-        </button>
+      {showVotingUI && (
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <button
+            className="btn btn-primary"
+            style={{ flex: 1 }}
+            onClick={handleVote}
+            disabled={!selectedOption || voting}
+          >
+            {voting ? 'Submitting...' : isChangingVote ? '🔄 Update Vote' : '🗳️ Submit Vote'}
+          </button>
+          {isChangingVote && (
+            <button
+              className="btn btn-secondary"
+              onClick={handleCancelChange}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       )}
 
-      {hasVoted && (
+      {hasVoted && !isChangingVote && (
         <div className="poll-footer">
           <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
           <p className="poll-vote-hint">💡 Click on vote counts to see who voted</p>
+          <button
+            className="btn btn-secondary"
+            style={{ marginTop: '1rem' }}
+            onClick={handleChangeVote}
+          >
+            🔄 Change My Vote
+          </button>
         </div>
       )}
 
