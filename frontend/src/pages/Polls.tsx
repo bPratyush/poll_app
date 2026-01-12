@@ -82,21 +82,14 @@ function Polls() {
 
       {polls.length === 0 ? (
         <div className="empty-state-hero">
-          <div className="empty-state-visual">
-            <div className="empty-state-circles">
-              <div className="circle circle-1"></div>
-              <div className="circle circle-2"></div>
-              <div className="circle circle-3"></div>
-            </div>
-            <div className="empty-state-icon-box">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-            </div>
-          </div>
           <h2>Welcome to PollHub</h2>
           <p className="empty-state-subtitle">Create interactive polls and gather opinions from your team, friends, or community.</p>
+          <Link to="/polls/new" className="btn btn-primary btn-lg">Create Your First Poll</Link>
+          
+          <div className="empty-state-divider">
+            <span>How it works</span>
+          </div>
+          
           <div className="empty-state-features">
             <div className="feature-item">
               <div className="feature-icon">1</div>
@@ -111,7 +104,6 @@ function Polls() {
               <span>View real-time results and voters</span>
             </div>
           </div>
-          <Link to="/polls/new" className="btn btn-primary btn-lg">Create Your First Poll</Link>
         </div>
       ) : (
         <div className="polls-grid">

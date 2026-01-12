@@ -32,10 +32,12 @@ PollHub is a complete polling solution built with **Go** on the backend and **Re
 |---------|-------------|
 | **User Authentication** | Secure sign-up and login with JWT tokens |
 | **Poll Management** | Create, edit, and delete polls with multiple options |
-| **Voting System** | One vote per user per poll, enforced at database level |
-| **Live Results** | View vote counts and percentages after voting |
+| **Voting System** | Vote on polls with ability to change your vote anytime |
+| **Real-time Updates** | Poll results refresh automatically every 5 seconds |
+| **Vote Change Notifications** | Poll creators get notified when someone changes their vote |
+| **Poll Edit Alerts** | Voters see a notification when a poll they voted on is modified |
 | **Voter Transparency** | Click on any vote count to see who voted for that option |
-| **Responsive Design** | Works seamlessly on desktop and mobile devices |
+| **Responsive Design** | Modern teal/navy theme that works on all devices |
 
 ---
 
@@ -158,11 +160,23 @@ Navigate to `http://localhost:3000`, create an account, and start polling!
        │          │    └──────────────┘              │          │
        │          │                                  │          │
        │          │    ┌──────────────┐              │          │
-       │          └───►│    Votes     │◄─────────────┘          │
-       │               ├──────────────┤                         │
-       └──────────────►│ id (PK)      │                         │
-                       │ user_id (FK) │                         │
-                       │ option_id(FK)│─────────────────────────┘
+       │          ├───►│    Votes     │◄─────────────┘          │
+       │          │    ├──────────────┤                         │
+       │          │    │ id (PK)      │                         │
+       └──────────┼───►│ user_id (FK) │                         │
+                  │    │ option_id(FK)│─────────────────────────┘
+                  │    │ created_at   │
+                  │    └──────────────┘
+                  │
+                  │    ┌──────────────┐
+                  └───►│Notifications │
+                       ├──────────────┤
+                       │ id (PK)      │
+                       │ user_id (FK) │
+                       │ message      │
+                       │ type         │
+                       │ poll_id      │
+                       │ read         │
                        │ created_at   │
                        └──────────────┘
 ```
@@ -207,6 +221,17 @@ Navigate to `http://localhost:3000`, create an account, and start polling!
 | created_at | TIMESTAMP | DEFAULT NOW |
 | | | UNIQUE(user_id, option_id) |
 
+#### Notifications
+| Column | Type | Constraints |
+|--------|------|-------------|
+| id | INTEGER | PRIMARY KEY |
+| user_id | INTEGER | FOREIGN KEY → users |
+| message | VARCHAR | NOT NULL |
+| type | VARCHAR | DEFAULT 'vote_changed' |
+| poll_id | INTEGER | NULLABLE |
+| read | BOOLEAN | DEFAULT FALSE |
+| created_at | TIMESTAMP | DEFAULT NOW |
+
 </details>
 
 ---
@@ -237,8 +262,17 @@ Base URL: `https://poll-app-backend-lj26.onrender.com/api`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/polls/:id/vote` | Vote on a poll |
+| `POST` | `/api/polls/:id/vote` | Vote on a poll (or change vote) |
 | `GET` | `/api/options/:id/voters` | Get voters for option |
+
+### Notifications
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/notifications` | List all notifications |
+| `GET` | `/api/notifications/unread-count` | Get unread count |
+| `PUT` | `/api/notifications/:id/read` | Mark notification as read |
+| `POST` | `/api/notifications/mark-all-read` | Mark all as read |
 
 <details>
 <summary><strong>View Request/Response Examples</strong></summary>
@@ -309,12 +343,13 @@ poll_app/
 │           ├── user.go
 │           ├── poll.go
 │           ├── option.go
-│           └── vote.go
+│           ├── vote.go
+│           └── notification.go
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── pages/           # Route components
-│   │   ├── components/      # Reusable UI components
+│   │   ├── components/      # Reusable UI components (Navbar with notifications)
 │   │   ├── context/         # React context (auth)
 │   │   ├── services/        # API client
 │   │   └── types/           # TypeScript definitions

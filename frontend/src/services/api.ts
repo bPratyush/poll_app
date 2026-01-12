@@ -74,7 +74,7 @@ export const notificationAPI = {
   
   markAsRead: (id: number) => api.put(`/api/notifications/${id}/read`),
   
-  markAllAsRead: () => api.put('/api/notifications/read-all'),
+  markAllAsRead: () => api.post('/api/notifications/mark-all-read'),
 };
 
 export default api;

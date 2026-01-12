@@ -18,6 +18,16 @@ const markUpdateAsSeen = (pollId: number, updatedAt: string) => {
   }
 };
 
+// Check if update was already seen
+const hasSeenUpdate = (pollId: number, updatedAt: string): boolean => {
+  try {
+    const seen = JSON.parse(localStorage.getItem('seenPollUpdates') || '{}');
+    return seen[pollId] === updatedAt;
+  } catch {
+    return false;
+  }
+};
+
 function PollDetail() {
   const { id } = useParams<{ id: string }>();
   const [poll, setPoll] = useState<Poll | null>(null);
@@ -153,8 +163,8 @@ function PollDetail() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {/* Poll Edited After Vote Notification */}
-      {poll.poll_edited_after_vote && hasVoted && !isChangingVote && showUpdateNotice && (
+      {/* Poll Edited After Vote Notification - only show if not already seen */}
+      {poll.poll_edited_after_vote && hasVoted && !isChangingVote && showUpdateNotice && !hasSeenUpdate(poll.id, poll.updated_at) && (
         <div className="alert alert-warning" style={{ marginBottom: '1.5rem', position: 'relative' }}>
           <div style={{ flex: 1 }}>
             <strong>Poll Updated:</strong> This poll was modified after you voted. 

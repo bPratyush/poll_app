@@ -80,8 +80,8 @@ func main() {
 	// Notification routes
 	router.GET("/api/notifications", h.AuthMiddleware(h.GetNotifications))
 	router.GET("/api/notifications/unread-count", h.AuthMiddleware(h.GetUnreadCount))
+	router.POST("/api/notifications/mark-all-read", h.AuthMiddleware(h.MarkAllNotificationsRead))
 	router.PUT("/api/notifications/:id/read", h.AuthMiddleware(h.MarkNotificationRead))
-	router.PUT("/api/notifications/read-all", h.AuthMiddleware(h.MarkAllNotificationsRead))
 
 	// CORS middleware
 	c := cors.New(cors.Options{
