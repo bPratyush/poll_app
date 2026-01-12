@@ -666,6 +666,80 @@ func (h *Handler) Vote(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	jsonResponse(w, http.StatusOK, pollToDTO(p, &votedOptionID, &now))
 }
 
+// ClearVote removes a user's vote from a poll
+func (h *Handler) ClearVote(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	u := r.Context().Value(userContextKey).(*ent.User)
+
+	pollID, err := strconv.Atoi(ps.ByName("id"))
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, "Invalid poll ID")
+		return
+	}
+
+	// Get the poll with options and user's votes
+	p, err := h.client.Poll.Query().
+		Where(poll.ID(pollID)).
+		WithCreator().
+		WithOptions(func(q *ent.PollOptionQuery) {
+			q.WithVotes(func(vq *ent.VoteQuery) {
+				vq.Where(vote.HasUserWith(user.ID(u.ID)))
+			})
+		}).
+		Only(context.Background())
+	if err != nil {
+		errorResponse(w, http.StatusNotFound, "Poll not found")
+		return
+	}
+
+	// Find the option text that was voted for (for notification)
+	var votedOptionText string
+	for _, opt := range p.Edges.Options {
+		if len(opt.Edges.Votes) > 0 {
+			votedOptionText = opt.Text
+			break
+		}
+	}
+
+	// Find and delete user's vote
+	voteDeleted := false
+	for _, opt := range p.Edges.Options {
+		for _, v := range opt.Edges.Votes {
+			err := h.client.Vote.DeleteOneID(v.ID).Exec(context.Background())
+			if err == nil {
+				voteDeleted = true
+			}
+		}
+	}
+
+	if !voteDeleted {
+		errorResponse(w, http.StatusBadRequest, "You haven't voted on this poll")
+		return
+	}
+
+	// Create notification for poll creator (not for creator's own votes)
+	if p.Edges.Creator.ID != u.ID {
+		message := fmt.Sprintf("%s removed their vote (\"%s\") from \"%s\"",
+			u.Username, votedOptionText, p.Title)
+		_, _ = h.client.Notification.Create().
+			SetMessage(message).
+			SetType("vote_cleared").
+			SetPollID(pollID).
+			SetUserID(p.Edges.Creator.ID).
+			Save(context.Background())
+	}
+
+	// Fetch updated poll
+	p, _ = h.client.Poll.Query().
+		Where(poll.ID(pollID)).
+		WithCreator().
+		WithOptions(func(q *ent.PollOptionQuery) {
+			q.WithVotes()
+		}).
+		Only(context.Background())
+
+	jsonResponse(w, http.StatusOK, pollToDTO(p, nil, nil))
+}
+
 func (h *Handler) GetVoters(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	optionID, err := strconv.Atoi(ps.ByName("id"))
 	if err != nil {

@@ -75,6 +75,7 @@ func main() {
 
 	// Vote routes
 	router.POST("/api/polls/:id/vote", h.AuthMiddleware(h.Vote))
+	router.DELETE("/api/polls/:id/vote", h.AuthMiddleware(h.ClearVote))
 	router.GET("/api/options/:id/voters", h.AuthMiddleware(h.GetVoters))
 
 	// Notification routes

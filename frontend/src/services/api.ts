@@ -62,6 +62,9 @@ export const pollAPI = {
   vote: (pollId: number, optionId: number) =>
     api.post(`/api/polls/${pollId}/vote`, { option_id: optionId }),
   
+  clearVote: (pollId: number) =>
+    api.delete(`/api/polls/${pollId}/vote`),
+  
   getVoters: (optionId: number) =>
     api.get(`/api/options/${optionId}/voters`),
 };

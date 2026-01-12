@@ -32,10 +32,11 @@ PollApp is a complete polling solution built with **Go** on the backend and **Re
 |---------|-------------|
 | **User Authentication** | Secure sign-up and login with JWT tokens |
 | **Poll Management** | Create, edit, and delete polls with multiple options |
-| **Voting System** | Vote on polls with ability to change your vote anytime |
-| **Real-time Updates** | Poll results refresh automatically every 5 seconds |
-| **Vote Change Notifications** | Poll creators get notified when someone changes their vote |
+| **Voting System** | Vote on polls with ability to change or clear your vote anytime |
+| **Real-time Updates** | Poll results refresh automatically every 3 seconds |
+| **Vote Notifications** | Poll creators get notified when someone changes or clears their vote |
 | **Poll Edit Alerts** | Voters see a notification when a poll they voted on is modified |
+| **Owner Vote Visibility** | Poll creators can see vote counts without voting themselves |
 | **Voter Transparency** | Click on any vote count to see who voted for that option |
 | **Responsive Design** | Modern teal/navy theme that works on all devices |
 
@@ -263,6 +264,7 @@ Base URL: `https://poll-app-backend-lj26.onrender.com/api`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/polls/:id/vote` | Vote on a poll (or change vote) |
+| `DELETE` | `/api/polls/:id/vote` | Clear/remove your vote |
 | `GET` | `/api/options/:id/voters` | Get voters for option |
 
 ### Notifications

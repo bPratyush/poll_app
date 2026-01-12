@@ -95,6 +95,24 @@ function PollDetail() {
     }
   };
 
+  const handleClearVote = async () => {
+    if (!poll) return;
+    if (!confirm('Are you sure you want to remove your vote from this poll?')) return;
+
+    setVoting(true);
+    try {
+      const response = await pollAPI.clearVote(poll.id);
+      setPoll(response.data);
+      setSelectedOption(null);
+      setIsChangingVote(false);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || 'Failed to clear vote');
+    } finally {
+      setVoting(false);
+    }
+  };
+
   const handleChangeVote = () => {
     setIsChangingVote(true);
     setSelectedOption(null);
@@ -258,12 +276,19 @@ function PollDetail() {
         <div className="poll-footer">
           <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
           <p className="poll-vote-hint">Click on vote counts to see who voted</p>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               className="btn btn-secondary"
               onClick={handleChangeVote}
             >
-              Change My Vote
+              Change Vote
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={handleClearVote}
+              disabled={voting}
+            >
+              Clear Vote
             </button>
             <Link to="/" className="btn btn-primary">
               Done
