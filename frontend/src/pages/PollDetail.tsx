@@ -122,7 +122,7 @@ function PollDetail() {
       {/* Poll Edited After Vote Notification */}
       {poll.poll_edited_after_vote && hasVoted && !isChangingVote && (
         <div className="alert alert-warning" style={{ marginBottom: '1.5rem' }}>
-          <strong>⚠️ Poll Updated:</strong> This poll was modified after you voted. 
+          <strong>Poll Updated:</strong> This poll was modified after you voted. 
           You may want to review the options and change your vote if needed.
         </div>
       )}
@@ -176,7 +176,7 @@ function PollDetail() {
             onClick={handleVote}
             disabled={!selectedOption || voting}
           >
-            {voting ? 'Submitting...' : isChangingVote ? '🔄 Update Vote' : '🗳️ Submit Vote'}
+            {voting ? 'Submitting...' : isChangingVote ? 'Update Vote' : 'Submit Vote'}
           </button>
           {isChangingVote && (
             <button
@@ -192,20 +192,20 @@ function PollDetail() {
       {hasVoted && !isChangingVote && (
         <div className="poll-footer">
           <p className="poll-total-votes">Total votes: {getTotalVotes()}</p>
-          <p className="poll-vote-hint">💡 Click on vote counts to see who voted</p>
+          <p className="poll-vote-hint">Click on vote counts to see who voted</p>
           <button
             className="btn btn-secondary"
             style={{ marginTop: '1rem' }}
             onClick={handleChangeVote}
           >
-            🔄 Change My Vote
+            Change My Vote
           </button>
         </div>
       )}
 
       <div style={{ marginTop: '2rem', textAlign: 'center' }}>
         <Link to="/" className="btn btn-secondary">
-          ← Back to Polls
+          Back to Polls
         </Link>
       </div>
 

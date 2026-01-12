@@ -45,7 +45,7 @@ function Polls() {
       <div className="polls-header">
         <h1>Active <span>Polls</span></h1>
         <Link to="/polls/new" className="btn btn-primary">
-          ✨ Create Poll
+          Create Poll
         </Link>
       </div>
 
@@ -53,10 +53,10 @@ function Polls() {
 
       {polls.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📭</div>
+          <div className="empty-state-icon">No polls</div>
           <h2>No polls yet</h2>
           <p>Create your first poll to get started!</p>
-          <Link to="/polls/new" className="btn btn-primary">✨ Create Your First Poll</Link>
+          <Link to="/polls/new" className="btn btn-primary">Create Your First Poll</Link>
         </div>
       ) : (
         <div className="polls-grid">
@@ -69,11 +69,18 @@ function Polls() {
                     by {poll.creator.username} • {poll.options.length} options
                   </span>
                 </div>
-                {poll.user_voted_option_id && (
-                  <span className="poll-card-badge">
-                    ✓ Voted
-                  </span>
-                )}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {poll.poll_edited_after_vote && poll.user_voted_option_id && (
+                    <span className="poll-card-badge poll-card-badge-warning">
+                      Updated
+                    </span>
+                  )}
+                  {poll.user_voted_option_id && (
+                    <span className="poll-card-badge">
+                      Voted
+                    </span>
+                  )}
+                </div>
               </div>
               {poll.description && <p>{poll.description}</p>}
               <div className="poll-card-actions">
