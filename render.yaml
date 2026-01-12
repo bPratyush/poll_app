@@ -1,5 +1,6 @@
 # Render Blueprint - Deploy both frontend and backend
 # Visit https://render.com/docs/blueprint-spec for more info
+# Note: Free tier doesn't support persistent disks, so SQLite data resets on redeploy
 
 services:
   # Backend API Service
@@ -8,7 +9,6 @@ services:
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    region: oregon
     plan: free
     envVars:
       - key: PORT
@@ -16,16 +16,12 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_PATH
-        value: /data/poll_app.db
+        value: ./poll_app.db
       - key: FRONTEND_URL
         fromService:
           name: poll-app-frontend
           type: web
           property: host
-    disk:
-      name: poll-data
-      mountPath: /data
-      sizeGB: 1
 
   # Frontend Static Site
   - type: web
@@ -33,7 +29,6 @@ services:
     runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
-    region: oregon
     plan: free
     envVars:
       - key: VITE_API_URL
