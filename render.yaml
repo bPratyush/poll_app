@@ -18,7 +18,7 @@ services:
       - key: DATABASE_PATH
         value: ./poll_app.db
       - key: FRONTEND_URL
-        value: https://poll-app-frontend.onrender.com
+        value: https://poll-app-frontend-ylqk.onrender.com
 
   # Frontend Static Site
   - type: web
@@ -29,7 +29,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        value: https://poll-app-backend.onrender.com
+        value: https://poll-app-backend-lj26.onrender.com
     headers:
       - path: /*
         name: Cache-Control
