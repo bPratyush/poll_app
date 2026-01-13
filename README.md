@@ -430,6 +430,6 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 <p align="center">
-  <strong>Built with Go and React</strong><br>
+  <strong>Built with Go and React by</strong><br>
   <sub>Pratyush Bindal</sub>
 </p>
