@@ -42,12 +42,13 @@ function PollDetail() {
   const [showUpdateNotice, setShowUpdateNotice] = useState(true);
   const { user } = useAuth();
 
-  const fetchPoll = useCallback(async (showLoading = false) => {
+  const fetchPoll = useCallback(async (showLoading = false, updateSelection = true) => {
     if (showLoading) setLoading(true);
     try {
       const response = await pollAPI.get(Number(id));
       setPoll(response.data);
-      if (response.data.user_voted_option_id) {
+      // Only update selection if not actively changing vote and updateSelection is true
+      if (updateSelection && response.data.user_voted_option_id) {
         setSelectedOption(response.data.user_voted_option_id);
       }
       setError('');
@@ -60,17 +61,18 @@ function PollDetail() {
 
   // Initial fetch
   useEffect(() => {
-    fetchPoll(true);
+    fetchPoll(true, true);
   }, [fetchPoll]);
 
-  // Auto-refresh every 5 seconds
+  // Auto-refresh every 3 seconds - don't update selection if user is changing vote
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchPoll(false);
+      // Pass false for updateSelection when user is actively changing their vote
+      fetchPoll(false, !isChangingVote);
     }, POLL_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [fetchPoll]);
+  }, [fetchPoll, isChangingVote]);
 
   // Mark update as seen when user views the poll
   useEffect(() => {
