@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/julienschmidt/httprouter"
+	_ "github.com/lib/pq"
 	"github.com/rs/cors"
-	_ "modernc.org/sqlite"
 )
 
 func getEnv(key, fallback string) string {
@@ -27,7 +27,7 @@ func getEnv(key, fallback string) string {
 func main() {
 	// Get configuration from environment
 	port := getEnv("PORT", "8080")
-	dbPath := getEnv("DATABASE_PATH", "poll_app.db")
+	databaseURL := getEnv("DATABASE_URL", "postgres://localhost/poll_app?sslmode=disable")
 	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
 	jwtSecret := getEnv("JWT_SECRET", "your-secret-key-change-in-production")
 
@@ -35,18 +35,13 @@ func main() {
 	handlers.SetJWTSecret(jwtSecret)
 
 	// Initialize database connection
-	db, err := sql.Open("sqlite", "file:"+dbPath+"?cache=shared&_pragma=foreign_keys(1)")
+	db, err := sql.Open("postgres", databaseURL)
 	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
-	}
-
-	// Enable foreign keys
-	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
-		log.Fatalf("failed enabling foreign keys: %v", err)
+		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
 
 	// Create an ent driver from the sql.DB
-	drv := entsql.OpenDB(dialect.SQLite, db)
+	drv := entsql.OpenDB(dialect.Postgres, db)
 	client := ent.NewClient(ent.Driver(drv))
 	defer client.Close()
 
