@@ -2,7 +2,7 @@
   <img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go">
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React">
   <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL">
 </p>
 
 <h1 align="center">PollApp</h1>
@@ -48,6 +48,7 @@ PollApp is a complete polling solution built with **Go** on the backend and **Re
 
 - [Go 1.21+](https://golang.org/dl/)
 - [Node.js 18+](https://nodejs.org/)
+- [PostgreSQL 12+](https://www.postgresql.org/download/)
 
 ### 1. Clone the Repository
 
@@ -56,17 +57,32 @@ git clone https://github.com/bPratyush/poll_app.git
 cd poll_app
 ```
 
-### 2. Start the Backend
+### 2. Setup PostgreSQL Database
+
+Create a PostgreSQL database:
+```bash
+createdb poll_app
+```
+
+Or using psql:
+```sql
+CREATE DATABASE poll_app;
+```
+
+### 3. Start the Backend
 
 ```bash
 cd backend
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env and set DATABASE_URL to your PostgreSQL connection string
 go mod tidy
 go run main.go
 ```
 
 Server runs at `http://localhost:8080`
 
-### 3. Start the Frontend
+### 4. Start the Frontend
 
 ```bash
 cd frontend
@@ -76,7 +92,7 @@ npm run dev
 
 App runs at `http://localhost:3000`
 
-### 4. Open in Browser
+### 5. Open in Browser
 
 Navigate to `http://localhost:3000`, create an account, and start polling!
 
@@ -92,7 +108,7 @@ Navigate to `http://localhost:3000`, create an account, and start polling!
 - **Go** - Fast, compiled language
 - **httprouter** - Lightweight HTTP router
 - **ent** - Type-safe ORM by Facebook
-- **SQLite** - Embedded database
+- **PostgreSQL** - Powerful relational database
 - **JWT** - Stateless authentication
 - **bcrypt** - Password hashing
 
@@ -135,7 +151,7 @@ Navigate to `http://localhost:3000`, create an account, and start polling!
 │                              │                              │
 │                              ▼                              │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │                 SQLite Database                     │    │
+│  │              PostgreSQL Database                    │    │
 │  │        Users │ Polls │ Options │ Votes              │    │
 │  └─────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
@@ -366,7 +382,7 @@ The application is deployed on [Render](https://render.com) with the following s
 | Variable | Description |
 |----------|-------------|
 | `PORT` | Server port (default: 8080) |
-| `DATABASE_PATH` | SQLite file path |
+| `DATABASE_URL` | PostgreSQL connection string |
 | `JWT_SECRET` | Token signing secret |
 | `FRONTEND_URL` | CORS allowed origin |
 
